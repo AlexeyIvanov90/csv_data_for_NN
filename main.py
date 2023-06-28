@@ -2,60 +2,108 @@ import os
 import pandas as pd
 import random
 
-# iterators over files in respective folders
-data_1 = os.scandir('../../../source/dataRGB/Основное зерно отобранное')
-data_2 = os.scandir('../../../source/dataRGB/Пшеница битые отобранное')
 
-count = 1
-category_1 = list()
-category_2 = list()
-
-for data in data_1:
-    category_1.append(data)
-
-
-for data in data_2:
-    category_2.append(data)
-
-random.shuffle(category_1)
-random.shuffle(category_2)
-
-
-max_size = min(len(category_1), len(category_2))
-
-# create a data frame to save locations and labels
-df_train = pd.DataFrame(columns=['file_name_1', 'file_name_2', 'label'])
-df_val = pd.DataFrame(columns=['file_name_1', 'file_name_2', 'label'])
-df_test = pd.DataFrame(columns=['file_name_1', 'file_name_2', 'label'])
-
-j = max_size - 1
-
-for i in range(max_size):
-    df_buf = pd.DataFrame(columns=['file_name_1', 'file_name_2', 'label'])
-
-    df_buf = df_buf._append({'file_name_1': category_1[i].path, 'file_name_2': category_2[j].path, 'label': 1}, ignore_index=True)
-    df_buf = df_buf._append({'file_name_1': category_1[j].path, 'file_name_2': category_1[i].path, 'label': 0}, ignore_index=True)
-    df_buf = df_buf._append({'file_name_1': category_1[j].path, 'file_name_2': category_2[i].path, 'label': 1}, ignore_index=True)
-    df_buf = df_buf._append({'file_name_1': category_2[i].path, 'file_name_2': category_2[j].path, 'label': 0}, ignore_index=True)
-
-    if i < (max_size * 0.8)/2:
-        df_train = df_train._append(df_buf, ignore_index=True)
+def max_size(dir_classes, data_max_size=0):
+    if data_max_size == 0:
+        for dir_class in dir_classes:
+            file = os.listdir(dir_class)
+            if data_max_size == 0:
+                data_max_size = len(file)
+            else:
+                data_max_size = min(data_max_size, len(file))
+        return data_max_size
     else:
-        if i < (max_size * 0.9)/2:
-            df_val = df_val._append(df_buf, ignore_index=True)
-        else:
-            df_test = df_test._append(df_buf, ignore_index=True)
+        return data_max_size
 
-    j -= 1
-    if i >= j:
-        break
 
-#df = df.sample(frac=1).reset_index(drop=True)
-df_train = df_train.sample(frac=1)
-df_val = df_val.sample(frac=1)
-df_test = df_test.sample(frac=1)
+def make_data_class(dir_class, data_max_size=0):
+    datas = os.scandir(dir_class)
 
-# save as csv file
-df_train.to_csv('train.csv', header=None, index=False)
-df_val.to_csv('val.csv', header=None, index=False)
-df_test.to_csv('test.csv', header=None, index=False)
+    file = list()
+    for data in datas:
+        file.append(data)
+
+    random.shuffle(file)
+    if data_max_size == 0:
+        return file
+    else:
+        return file[0:data_max_size]
+
+
+def cat_class(dir_class_1, dir_class_2):
+    df_buf = pd.DataFrame(columns=['file_name_1', 'file_name_2', 'label'])
+    label = 1
+    data_max_size = min(len(dir_class_1), len(dir_class_2))
+
+    if len(dir_class_1) == len(dir_class_2):
+        label = 0
+        for i in range(int(data_max_size/2)):
+            df_buf = df_buf._append(
+                {'file_name_1': dir_class_1[i].path, 'file_name_2': dir_class_2[data_max_size - i - 1].path,
+                 'label': label},
+                ignore_index=True)
+            df_buf = df_buf._append(
+                {'file_name_1': dir_class_2[i].path, 'file_name_2': dir_class_1[data_max_size - i - 1].path,
+                 'label': label},
+                ignore_index=True)
+    else:
+        for i in range(int(data_max_size/2)):
+            df_buf = df_buf._append(
+                {'file_name_1': dir_class_1[i].path, 'file_name_2': dir_class_2[data_max_size - i - 1].path,
+                 'label': label},
+                ignore_index=True)
+            df_buf = df_buf._append(
+                {'file_name_1': dir_class_2[i].path, 'file_name_2': dir_class_1[data_max_size - i - 1].path,
+                 'label': label},
+                ignore_index=True)
+    return df_buf
+
+def make_siam_dataset(dir_classes, max_size_class):
+    df = pd.DataFrame(columns=['file_name_1', 'file_name_2', 'label'])
+
+    for i in range(len(dir_classes)):
+        class_1 = make_data_class(dir_classes[i], max_size_class)
+        for j in range(len(dir_classes)):
+            class_2 = None
+            if i == j:
+                class_2 = make_data_class(dir_classes[j], int(max_size_class))
+            else:
+                class_2 = make_data_class(dir_classes[j], int(max_size_class / (len(dir_classes) - 1)))
+
+            df = df._append(cat_class(class_1, class_2))
+    return df
+
+# 9 category
+dir_class = list()
+dir_class.append('../../../source/dataRGB/Основное зерно отобранное')
+dir_class.append('../../../source/dataRGB/Пшеница битые отобранное')
+dir_class.append('../../../source/dataRGB/Пшеница в оболочке отобранное')
+dir_class.append('../../../source/dataRGB/Пшеница головня отобранное')
+dir_class.append('../../../source/dataRGB/Пшеница изъеденные отобранное')
+dir_class.append('../../../source/dataRGB/Пшеница испорченные отобранное')
+dir_class.append('../../../source/dataRGB/Пшеница клоп черепашка отобранное')
+dir_class.append('../../../source/dataRGB/Пшеница поврежденная сушкой отобранное')
+dir_class.append('../../../source/dataRGB/Пшеница щуплые отобранное')
+
+max_size_class = max_size(dir_class)
+
+print("Max size class: " + str(max_size_class))
+
+df = make_siam_dataset(dir_class, max_size_class)
+
+df["file_name_1"] = df["file_name_1"].str.replace('\\', '/')
+
+df = df.sample(frac=1).reset_index(drop=True)
+
+df_train = df[:int(len(df)*0.8)]
+df_val = df[int(len(df)*0.8):int(len(df)*0.9)]
+df_test = df[int(len(df)*0.9):]
+
+df_train.to_csv('siam_data_train.csv', header=None, index=False, encoding="ansi")
+df_val.to_csv('siam_data_val.csv', header=None, index=False, encoding="ansi")
+df_test.to_csv('siam_data_test.csv', header=None, index=False, encoding="ansi")
+
+print(df['label'].value_counts())
+print(df_train['label'].value_counts())
+print(df_val['label'].value_counts())
+print(df_test['label'].value_counts())
