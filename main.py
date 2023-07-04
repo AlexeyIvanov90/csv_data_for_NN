@@ -3,10 +3,10 @@ import pandas as pd
 import random
 
 
-def max_size(dir_classes, data_max_size=0):
+def max_size(work_folder, data_max_size=0):
     if data_max_size == 0:
-        for dir_class in dir_classes:
-            file = os.listdir(dir_class)
+        for class_dir in work_folder:
+            file = os.listdir(class_dir)
             if data_max_size == 0:
                 data_max_size = len(file)
             else:
@@ -16,8 +16,8 @@ def max_size(dir_classes, data_max_size=0):
         return data_max_size
 
 
-def make_data_class(dir_class, data_max_size=0):
-    datas = os.scandir(dir_class)
+def make_data_class(work_dir_class, data_max_size=0):
+    datas = os.scandir(work_dir_class)
 
     file = list()
     for data in datas:
@@ -58,24 +58,27 @@ def cat_class(dir_class_1, dir_class_2):
                 ignore_index=True)
     return df_buf
 
-def make_siam_dataset(dir_classes, max_size_class):
-    df = pd.DataFrame(columns=['file_name_1', 'file_name_2', 'label'])
 
-    for i in range(len(dir_classes)):
-        class_1 = make_data_class(dir_classes[i], max_size_class)
-        for j in range(len(dir_classes)):
-            class_2 = None
+def make_siam_dataset(work_folder, max_size_class):
+    data_frame = pd.DataFrame(columns=['file_name_1', 'file_name_2', 'label'])
+
+    for i in range(len(work_folder)):
+        class_1 = make_data_class(work_folder[i], max_size_class)
+        for j in range(len(work_folder)):
+            # class_2 = None
             if i == j:
-                class_2 = make_data_class(dir_classes[j], int(max_size_class))
+                class_2 = make_data_class(work_folder[j], int(max_size_class))
             else:
-                class_2 = make_data_class(dir_classes[j], int(max_size_class / (len(dir_classes) - 1)))
+                class_2 = make_data_class(work_folder[j], int(max_size_class / (len(work_folder) - 1)))
 
-            df = df._append(cat_class(class_1, class_2))
-    return df
+            data_frame = data_frame._append(cat_class(class_1, class_2))
+    return data_frame
+
 
 # 9 category
 dir_class = list()
 dir_class.append('../../../source/dataRGB/Основное зерно отобранное')
+dir_class.append('../../../source/dataRGB/Пшеница альтернариоз отобранное 2')
 dir_class.append('../../../source/dataRGB/Пшеница битые отобранное')
 dir_class.append('../../../source/dataRGB/Пшеница в оболочке отобранное')
 dir_class.append('../../../source/dataRGB/Пшеница головня отобранное')
@@ -85,11 +88,11 @@ dir_class.append('../../../source/dataRGB/Пшеница клоп черепаш
 dir_class.append('../../../source/dataRGB/Пшеница поврежденная сушкой отобранное')
 dir_class.append('../../../source/dataRGB/Пшеница щуплые отобранное')
 
-max_size_class = max_size(dir_class)
+max_size = max_size(dir_class)
 
-print("Max size class: " + str(max_size_class))
+print("Max size class: " + str(max_size))
 
-df = make_siam_dataset(dir_class, max_size_class)
+df = make_siam_dataset(dir_class, max_size)
 
 df["file_name_1"] = df["file_name_1"].str.replace('\\', '/')
 
