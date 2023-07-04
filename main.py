@@ -3,14 +3,28 @@ import pandas as pd
 import random
 
 
+def is_png(file_name):
+    if file_name.find(".png") == -1:
+        return False
+    return True
+
+
 def max_size(work_folder, data_max_size=0):
     if data_max_size == 0:
         for class_dir in work_folder:
-            file = os.listdir(class_dir)
+            file_names = os.listdir(class_dir)
+            buf_len = 0
             if data_max_size == 0:
-                data_max_size = len(file)
+                for file_name in file_names:
+                    if is_png(file_name):
+                        buf_len += 1
+                data_max_size = buf_len
             else:
-                data_max_size = min(data_max_size, len(file))
+                for file_name in file_names:
+                    if is_png(file_name):
+                        buf_len += 1
+
+                data_max_size = min(data_max_size, buf_len)
         return data_max_size
     else:
         return data_max_size
@@ -21,7 +35,8 @@ def make_data_class(work_dir_class, data_max_size=0):
 
     file = list()
     for data in datas:
-        file.append(data)
+        if is_png(data.name):
+            file.append(data)
 
     random.shuffle(file)
     if data_max_size == 0:
