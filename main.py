@@ -50,14 +50,17 @@ def cat_class(dir_category_1, dir_category_2):
     if dir_category_1.iloc[0]['label'] != dir_category_2.iloc[0]['label']:
         label = 1
 
-    dir_category_1 = dir_category_1.sample(frac=1).reset_index(drop=True)
-    dir_category_2 = dir_category_2.sample(frac=1).reset_index(drop=True)
+    for i in range(5):
+        data_frame_buf = pd.DataFrame(columns=['file_name_1', 'file_name_2', 'label'])
 
-    data_frame['file_name_1'] = dir_category_1['file_name']
-    data_frame['file_name_2'] = dir_category_2['file_name']
-    data_frame['label'] = [label] * len(data_frame.index)
+        dir_category_1 = dir_category_1.sample(frac=1).reset_index(drop=True)
+        dir_category_2 = dir_category_2.sample(frac=1).reset_index(drop=True)
 
-    print(data_frame)
+        data_frame_buf['file_name_1'] = dir_category_1['file_name']
+        data_frame_buf['file_name_2'] = dir_category_2['file_name']
+        data_frame_buf['label'] = [label] * len(data_frame_buf.index)
+
+        data_frame = data_frame._append(data_frame_buf)
 
     return data_frame
 
@@ -142,6 +145,10 @@ print(df_test['label'].value_counts())
 seam_train_data_set = make_seam_dataset(df_train)
 seam_val_data_set = make_seam_dataset(df_val)
 seam_test_data_set = make_seam_dataset(df_test)
+
+seam_train_data_set.to_csv('seam_data_train.csv', header=None, index=False, encoding="ansi")
+seam_val_data_set.to_csv('seam_data_val.csv', header=None, index=False, encoding="ansi")
+seam_test_data_set.to_csv('seam_data_test.csv', header=None, index=False, encoding="ansi")
 
 print(seam_train_data_set['label'].value_counts())
 print(seam_val_data_set['label'].value_counts())
