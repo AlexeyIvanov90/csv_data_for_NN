@@ -45,21 +45,19 @@ def make_data_category(work_dir_class):
 
 def cat_class(dir_category_1, dir_category_2):
     data_frame = pd.DataFrame(columns=['file_name_1', 'file_name_2', 'label'])
-    max_size_category = len(dir_category_1)
 
     label = 0
     if dir_category_1.iloc[0]['label'] != dir_category_2.iloc[0]['label']:
         label = 1
 
-    for i in range(int(max_size_category/2)):
-        data_frame = data_frame._append(
-            {'file_name_1': dir_category_1.iloc[i]['file_name'], 'file_name_2': dir_category_2.iloc[max_size_category - i - 1]['file_name'],
-            'label': label},
-            ignore_index=True)
-        data_frame = data_frame._append(
-            {'file_name_1': dir_category_2.iloc[i]['file_name'], 'file_name_2': dir_category_1.iloc[max_size_category - i - 1]['file_name'],
-            'label': label},
-            ignore_index=True)
+    dir_category_1 = dir_category_1.sample(frac=1).reset_index(drop=True)
+    dir_category_2 = dir_category_2.sample(frac=1).reset_index(drop=True)
+
+    data_frame['file_name_1'] = dir_category_1['file_name']
+    data_frame['file_name_2'] = dir_category_2['file_name']
+    data_frame['label'] = [label] * len(data_frame.index)
+
+    print(data_frame)
 
     return data_frame
 
@@ -98,6 +96,7 @@ def make_seam_dataset(data_set):
 
 # 10 category
 dir_class = list()
+
 dir_class.append('../../../source/dataRGB/Основное зерно отобранное')
 dir_class.append('../../../source/dataRGB/Пшеница альтернариоз отобранное 2')
 dir_class.append('../../../source/dataRGB/Пшеница битые отобранное')
@@ -105,7 +104,7 @@ dir_class.append('../../../source/dataRGB/Пшеница в оболочке о�
 dir_class.append('../../../source/dataRGB/Пшеница головня отобранное')
 dir_class.append('../../../source/dataRGB/Пшеница изъеденные отобранное')
 dir_class.append('../../../source/dataRGB/Пшеница испорченные отобранное')
-dir_class.append('../../../source/dataRGB/Пшеница клоп черепашка отобранное')
+dir_class.append('../../../source/dataRGB/Пшеница клоп черепашка отобранное 1')
 dir_class.append('../../../source/dataRGB/Пшеница поврежденная сушкой отобранное')
 dir_class.append('../../../source/dataRGB/Пшеница щуплые отобранное')
 
@@ -135,12 +134,10 @@ df_train.to_csv('data_train.csv', header=None, index=False, encoding="ansi")
 df_val.to_csv('data_val.csv', header=None, index=False, encoding="ansi")
 df_test.to_csv('data_test.csv', header=None, index=False, encoding="ansi")
 
-
 print(df['label'].value_counts())
 print(df_train['label'].value_counts())
 print(df_val['label'].value_counts())
 print(df_test['label'].value_counts())
-
 
 seam_train_data_set = make_seam_dataset(df_train)
 seam_val_data_set = make_seam_dataset(df_val)
