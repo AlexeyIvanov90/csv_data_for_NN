@@ -1,16 +1,33 @@
 import data_set as ds
 from PyQt6.QtWidgets import (
+    QMainWindow,
     QApplication,
-    QComboBox,
     QLabel,
     QPushButton,
     QWidget,
     QFileDialog,
-    QListWidget
+    QListWidget,
+    QStatusBar
 )
 
+from threading import Thread
 
-class Absolute(QWidget):
+
+class ThreadWithReturnValue(Thread):
+
+    def __init__(self, group=None, target=None, name=None, args=(), kwargs={}, Verbose=None):
+        Thread.__init__(self, group, target, name, args, kwargs)
+        self._return = None
+
+    def run(self):
+        if self._target is not None:
+            self._return = self._target(*self._args, **self._kwargs)
+
+    def join(self, *args):
+        Thread.join(self, *args)
+        return self._return
+
+class Absolute(QMainWindow):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
 
@@ -65,13 +82,26 @@ class Absolute(QWidget):
         self.button_clear.move(315, 330)
         self.button_clear.clicked.connect(self.clear)
 
+        self.button_test = QPushButton('TEST', self)
+        self.button_test.setFixedSize(100, 25)
+        self.button_test.move(300, 0)
+        self.button_test.clicked.connect(self.test)
+
+        self.status_bar = QStatusBar(self)
+        self.status_bar.setFixedSize(630, 25)
+        self.status_bar.move(0, 355)
+
         self.last_path = "D:/source x4/dataRGB/"
         self.dir_class_1 = list()
         self.dir_class_2 = list()
 
     def add_class_1(self):
         self.dir_class_1.append(QFileDialog.getExistingDirectory(self, "Open File", self.last_path))
-        print("add class 1: " + self.dir_class_1[len(self.dir_class_1) - 1])
+
+        text = "add class 1: " + self.dir_class_1[len(self.dir_class_1) - 1]
+        self.status_bar.showMessage(text, 1000)
+        print(text)
+
         self.last_path = (self.dir_class_1[len(self.dir_class_1) - 1]
         [:self.dir_class_1[len(self.dir_class_1) - 1].rfind("/")])
         self.list_1.addItem(self.dir_class_1[len(self.dir_class_1) - 1]
@@ -79,7 +109,11 @@ class Absolute(QWidget):
 
     def add_class_2(self):
         self.dir_class_2.append(QFileDialog.getExistingDirectory(self, "Open File", self.last_path))
-        print("add class 2: " + self.dir_class_2[len(self.dir_class_2) - 1])
+
+        text = "add class 2: " + self.dir_class_2[len(self.dir_class_2) - 1]
+        self.status_bar.showMessage(text, 1000)
+        print(text)
+
         self.last_path = (self.dir_class_2[len(self.dir_class_2) - 1]
         [:self.dir_class_2[len(self.dir_class_2) - 1].rfind("/")])
         self.list_2.addItem(self.dir_class_2[len(self.dir_class_2) - 1]
@@ -88,16 +122,22 @@ class Absolute(QWidget):
     def delete_class_1(self):
         if self.list_1.currentRow() < 0:
             return
-        print("delete class 1: ")
-        print(self.list_1.currentRow())
+
+        text = "delete class 1: " + str(self.list_1.currentRow())
+        self.status_bar.showMessage(text, 1000)
+        print(text)
+
         self.dir_class_1.pop(self.list_1.currentRow())
         self.list_1.takeItem(self.list_1.currentRow())
 
     def delete_class_2(self):
         if self.list_2.currentRow() < 0:
             return
-        print("delete class 2: ")
-        print(self.list_2.currentRow())
+
+        text = "delete class 2: " + str(self.list_2.currentRow())
+        self.status_bar.showMessage(text, 1000)
+        print(text)
+
         self.dir_class_2.pop(self.list_2.currentRow())
         self.list_2.takeItem(self.list_2.currentRow())
 
@@ -127,3 +167,7 @@ class Absolute(QWidget):
         self.list_1.clear()
         self.dir_class_2.clear()
         self.list_2.clear()
+
+    def test(self):
+        print("test")
+        self.status_bar.showMessage("testy", 1000)

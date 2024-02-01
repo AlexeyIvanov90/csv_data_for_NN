@@ -1,11 +1,8 @@
 D:/source x4/dataRGB/Пшеница битые отобранное
-D:/source x4/dataRGB/Пшеница испорченные отобранное
-D:/source x4/dataRGB/Пшеница проросшие отобранное
 D:/source x4/dataRGB/Пшеница щуплые отобранное
-D:/source x4/dataRGB/Рожь основное отобранное
 D:/source x4/dataRGB/Амброзия отобранное
-D:/source x4/dataRGB/Овсюг отобранное
 D:/source x4/dataRGB/Органика отобранное
 D:/source x4/dataRGB/Пшеница головня отобранное
 D:/source x4/dataRGB/Сорные семена отобранное
 D:/source x4/dataRGB/Ячмень отобранное
+D:/source x4/dataRGB/Овсюг отобранное
